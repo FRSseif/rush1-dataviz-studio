@@ -26,3 +26,5 @@ Thumbs.db
 !deliverable/Dataviz_Studio_TikTok_Client.xlsx
 # Données brutes (données personnelles)
 data_raw/*.csv
+
+.venv/
