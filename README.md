@@ -51,7 +51,7 @@ AppleScript ne sait pas créer de TreeMap dans Excel pour Mac. Ses données, ses
 7. Clic droit > **Modifier le texte de remplacement** :
    `TreeMap : chaque tuile est un créateur ; taille = vues cumulées (Tendances + Humour), couleur = sujet. Les créateurs non retenus sont regroupés par sujet.`
 8. Revenir sur l'onglet **Synthèse**, cliquer sur **A1**, enregistrer (⌘S) au format .xlsx, puis fermer Excel.
-9. Lancer `.venv/bin/python scripts/06_finaliser.py`. Le script retire ce qu'Excel ajoute à l'enregistrement (nom de l'auteur, chemin local, étiquette de confidentialité, imprimante), remet la Synthèse en premier, puis relance l'audit et la vérification. Il doit afficher **28/28** et **19/19 PASS**.
+9. Lancer `python3 scripts/06_finaliser.py` (aucune dépendance à installer). Le script retire ce qu'Excel ajoute à l'enregistrement (nom de l'auteur, chemin local, étiquette de confidentialité, imprimante), remet la Synthèse en premier et contrôle le classeur : tout doit être **PASS**. Si les CSV sont dans `data_raw/` et que la chaîne a tourné, il relance aussi l'audit complet et la vérification des chiffres (le lancer alors avec `.venv/bin/python`).
 
 ## Données personnelles
 
