@@ -2,7 +2,18 @@
 
 **Objectif** : identifier ce qui distingue les contenus et les créateurs TikTok les plus performants, et livrer à un manager non technicien un classeur Excel qui rend ces facteurs évidents en quelques minutes, en version **client**, conforme au RGPD.
 
-**Livrable** : [`deliverable/Dataviz_Studio_TikTok_Client.xlsx`](deliverable/Dataviz_Studio_TikTok_Client.xlsx). Il s'ouvre sur la *Synthèse* (conclusions et chiffres clés), suivie des onglets *Facteurs*, *Gros comptes*, *Catégories & TreeMap*, *Méthode & limites* et *Données*. Le support de l'oral est dans [`docs/walkthrough.md`](docs/walkthrough.md).
+**Livrable** : [`deliverable/Dataviz_Studio_TikTok_Client.xlsx`](deliverable/Dataviz_Studio_TikTok_Client.xlsx). Il s'ouvre sur la **Synthèse**, qui donne les conclusions clés et leurs chiffres sans avoir à parcourir les données.
+
+| Onglet | Contenu |
+|---|---|
+| Synthèse | 5 conclusions chiffrées, leaders par sujet, recommandations, limites |
+| Facteurs | Leviers que le créateur contrôle (avec ou sans effet), conséquences du succès |
+| Gros comptes | Réponse à l'objection « les gros comptes gagneraient de toute façon » |
+| Catégories & TreeMap | Sujets de contenu, leaders par sujet et TreeMap (taille = vues, couleur = sujet) |
+| Méthode & limites | Définition du succès, extraits utilisés, méthodes, biais, données personnelles |
+| Données | Données préparées et pseudonymisées, source des formules et des tableaux croisés |
+
+**Données** : 300 vidéos issues de 3 des 5 extraits fournis (collecte de 2021).
 
 ## Structure
 
@@ -12,7 +23,6 @@
 | `scripts/` | Chaîne reproductible (voir ci-dessous) | Oui |
 | `work/` | Fichiers intermédiaires privés (table nettoyée, résultats, contrôles) | Non |
 | `deliverable/` | Uniquement le classeur client | Oui |
-| `docs/` | Sujet et aide-mémoire de l'oral | Oui |
 
 ## Reproduire
 
