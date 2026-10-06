@@ -13,6 +13,8 @@
 | Méthode & limites | Définition du succès, extraits utilisés, méthodes, biais, données personnelles |
 | Données | Données préparées et pseudonymisées, source des formules et des tableaux croisés |
 
+**Présentation écrite** : [`deliverable/Soutenance_ecrite_Dataviz_Studio.docx`](deliverable/Soutenance_ecrite_Dataviz_Studio.docx), en remplacement de la soutenance orale : problématique, données, définition du succès, analyse, réponse au client, limites et données personnelles.
+
 **Données** : 300 vidéos issues de 3 des 5 extraits fournis (collecte de 2021).
 
 ## Structure
@@ -22,7 +24,7 @@
 | `data_raw/` | Les 5 CSV bruts (jamais modifiés) | Non : données personnelles, voir `data_raw/README.md` |
 | `scripts/` | Préparation, analyse et vérification des chiffres | Oui |
 | `work/` | Fichiers intermédiaires privés (table nettoyée, résultats) | Non |
-| `deliverable/` | Uniquement le classeur client | Oui |
+| `deliverable/` | Le classeur client et sa présentation écrite | Oui |
 
 ## Reproduire l'analyse
 
