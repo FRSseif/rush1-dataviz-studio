@@ -627,10 +627,10 @@ ORDRE_FACTEURS = ["duree_15", "duree_s", "hashtag_generique", "nb_hashtags",
 # Positions (0-based) des blocs de l'onglet Facteurs.
 FA_TABLE = 5            # première ligne du tableau des facteurs
 FA_GRAPH = 22           # section graphique
-FA_CONSEQ = 40          # conséquences du succès
-FA_DUREE = 47           # détail durée
-FA_JOURS = 62           # détail jours / créneaux
-FA_TCD = 80             # tableau croisé dynamique (ligne de la zone du TCD)
+FA_CONSEQ = 42          # conséquences du succès
+FA_DUREE = 50           # détail durée
+FA_JOURS = 73           # détail jours / créneaux
+FA_TCD = 91             # tableau croisé dynamique (ligne de la zone du TCD)
 # Catégories & TreeMap
 CA_THEMES = 5
 CA_LEADERS = 15
@@ -682,6 +682,12 @@ def phrases_facteurs(res):
     }
 
 
+def mesure_txt(typ):
+    return {"bin": "Écart d'engagement médian (oui − non)",
+            "num": "Corrélation de rang ρ (Spearman)",
+            "cat": "Écart max entre modalités"}[typ]
+
+
 def feuille_facteurs(C, s, ws, d, res, calc, refs):
     ws.set_column(0, 0, 1.5)
     ws.set_column(1, 1, 33)
@@ -709,7 +715,8 @@ def feuille_facteurs(C, s, ws, d, res, calc, refs):
     for i, cle in enumerate(ORDRE_FACTEURS):
         r = FA_TABLE + i
         x = fac[cle]
-        ws.set_row(r, hauteur((phrases[cle], 62, 10), (x["libelle"], 33, 10)))
+        ws.set_row(r, hauteur((phrases[cle], 62, 10), (x["libelle"], 33, 10),
+                              (x["verdict"], 13, 11), (mesure_txt(x["type"]), 21, 10)))
         ws.write(r, 1, x["libelle"], s["txt_b"])
         for j, ech in enumerate(ECH):
             c = 3 + 2 * j
@@ -753,10 +760,11 @@ def feuille_facteurs(C, s, ws, d, res, calc, refs):
 
     # Graphique des écarts (facteurs oui/non communs aux trois échantillons).
     section(ws, s, FA_GRAPH, "Seule la durée se détache, et seulement dans les tendances", 1, 10)
-    ws.write(FA_GRAPH + 1, 7, "Données du graphique (renvoient au tableau A)", s["note"])
+    ws.write(FA_GRAPH + 1, 1, "Données du graphique (elles renvoient au tableau A)",
+             s["note"])
     hdr_r = FA_GRAPH + 2
     for j, x in enumerate(["Levier", "Tendances", "Likées", "Humour"]):
-        ws.write(hdr_r, 7 + j, x, s["th"])
+        ws.write(hdr_r, 1 + 2 * j if j else 1, x, s["th"] if j else s["th_g"])
     cles = ["duree_15", "hashtag_generique", "legende_vide", "format_collab",
             "question_ou_appel", "week_end"]
     courts = {"duree_15": "Durée > 15 s", "hashtag_generique": "Hashtags #fyp…",
@@ -764,30 +772,30 @@ def feuille_facteurs(C, s, ws, d, res, calc, refs):
               "question_ou_appel": "Question / appel", "week_end": "Week-end"}
     for i, cle in enumerate(cles):
         r = hdr_r + 1 + i
-        ws.write(r, 7, courts[cle], s["txt"])
+        ws.write(r, 1, courts[cle], s["txt"])
         for j, ech in enumerate(ECH):
             if ech in graph_rows.get(cle, {}):
                 rr, cc, rv = graph_rows[cle][ech]
                 cell = xlsxwriter.utility.xl_rowcol_to_cell(rr, cc)
-                ws.write_formula(r, 8 + j, f"={cell}", s["pts"], rv)
+                ws.write_formula(r, 3 + 2 * j, f"={cell}", s["pts"], rv)
             else:
-                ws.write(r, 8 + j, "", s["pts"])
+                ws.write(r, 3 + 2 * j, "—", s["centre"])
     ch = C.wb.add_chart({"type": "bar"})
     for j, ech in enumerate(ECH):
         ch.add_series({
             "name": ECH_COURT[ech],
-            "categories": ["Facteurs", hdr_r + 1, 7, hdr_r + len(cles), 7],
-            "values": ["Facteurs", hdr_r + 1, 8 + j, hdr_r + len(cles), 8 + j],
+            "categories": ["Facteurs", hdr_r + 1, 1, hdr_r + len(cles), 1],
+            "values": ["Facteurs", hdr_r + 1, 3 + 2 * j, hdr_r + len(cles), 3 + 2 * j],
             "fill": {"color": COULEURS_ECH[ech]}, "gap": 60,
         })
     ch.set_title({"name": "Écart d'engagement médian (avec − sans), en points",
                   "name_font": {"size": 11, "bold": True, "color": NUIT}})
     ch.set_x_axis({"num_format": "+0;-0;0", "major_gridlines": {"visible": True,
                    "line": {"color": "#E5E7EB"}}, "name": "points d'engagement"})
-    ch.set_y_axis({"reverse": True})
+    ch.set_y_axis({"reverse": True, "label_position": "low"})
     ch.set_legend({"position": "bottom"})
-    ch.set_size({"width": 700, "height": 330})
-    ws.insert_chart(FA_GRAPH + 1, 1, ch, {"description":
+    ch.set_size({"width": 560, "height": 330})
+    ws.insert_chart(FA_GRAPH + 1, 10, ch, {"description":
                     "Barres horizontales : écart de taux d'engagement médian entre vidéos avec et "
                     "sans chaque caractéristique, pour les trois échantillons. Seule la durée "
                     "supérieure à 15 secondes montre un écart net (+5,5 points), dans les "
@@ -798,10 +806,10 @@ def feuille_facteurs(C, s, ws, d, res, calc, refs):
     section(ws, s, FA_CONSEQ, "B. Conséquences du succès : à connaître, mais pas des leviers",
             1, 10)
     ws.set_row(FA_CONSEQ + 1, 30)
-    for j, x in enumerate(["Variable", "Mesure", "Valeur", "p", "", "", "", "", "Statut",
-                           "Pourquoi ce n'est pas un levier"]):
-        if x:
-            ws.write(FA_CONSEQ + 1, 1 + j, x, s["th"] if j else s["th_g"])
+    for j, x in enumerate(["Variable", "Mesure", "Valeur", "p", "Statut"]):
+        ws.write(FA_CONSEQ + 1, 1 + j, x, s["th"] if j else s["th_g"])
+    ws.merge_range(FA_CONSEQ + 1, 6, FA_CONSEQ + 1, 10, "Pourquoi ce n'est pas un levier",
+                   s["th"])
     lignes = []
     f, v, n = calc.correl("Humour", "Rang abonnés", "Rang vues")
     lignes.append(("Nombre d'abonnés", "ρ avec les vues (Humour)", (f, v, n), "rho",
@@ -820,7 +828,7 @@ def feuille_facteurs(C, s, ws, d, res, calc, refs):
                    "non transmis dans cette version (minimisation)."))
     for i, (lib, mesure, val, kind, why) in enumerate(lignes):
         r = FA_CONSEQ + 2 + i
-        ws.set_row(r, hauteur((why, 62, 10), (mesure, 21, 10)))
+        ws.set_row(r, hauteur((why, 100, 10), (mesure, 21, 10), (lib, 33, 10)))
         ws.write(r, 1, lib, s["txt_b"])
         ws.write(r, 2, mesure, s["txt"])
         if kind == "rho":
@@ -835,13 +843,14 @@ def feuille_facteurs(C, s, ws, d, res, calc, refs):
         else:
             ws.write_number(r, 3, val["ecart"] * 100, s["pts"])
             ws.write_number(r, 4, val["p"], s["p"])
-        ws.write(r, 9, "Conséquence", s["centre"])
-        ws.write(r, 10, why, s["txt"])
+        ws.write(r, 5, "Conséquence", s["centre"])
+        ws.merge_range(r, 6, r, 10, why, s["txt"])
 
     # C. Détail de la durée.
     section(ws, s, FA_DUREE, "C. Détail : la durée", 1, 10)
     for k, (titre, cible) in enumerate((("Part de top performers", "top"),
-                                        ("Taux d'engagement médian", "med"))):
+                                        ("Taux d'engagement médian", "med"),
+                                        ("Nombre de vidéos", "n"))):
         r0 = FA_DUREE + 1 + k * 7
         ws.write(r0, 1, titre, s["th_g"])
         for j, ech in enumerate(ECH):
@@ -851,7 +860,10 @@ def feuille_facteurs(C, s, ws, d, res, calc, refs):
             ws.write(r, 1, cl, s["txt"])
             for j, ech in enumerate(ECH):
                 conds = [("Échantillon", "=", ech), ("Classe de durée", "=", cl)]
-                if cible == "top":
+                if cible == "n":
+                    f, v = calc.countifs(conds)
+                    ecrire_formule(ws, r, 3 + 2 * j, f, v, s["int"])
+                elif cible == "top":
                     f, v = calc.averageifs("Top performer", conds)
                     ecrire_formule(ws, r, 3 + 2 * j, f, v, s["pct0"])
                 else:
@@ -870,6 +882,8 @@ def feuille_facteurs(C, s, ws, d, res, calc, refs):
                    "line": {"color": "#E5E7EB"}}})
     ch.set_legend({"position": "bottom"})
     ch.set_size({"width": 520, "height": 270})
+    ws.write(FA_DUREE + 21, 1, "Attention aux petits effectifs : les vidéos de plus de 60 s "
+             "sont 2 dans les tendances et 1 dans l'humour.", s["note"])
     ws.insert_chart(FA_DUREE + 1, 10, ch, {"x_offset": 10, "description":
                     "Colonnes : part de top performers par classe de durée, pour les trois "
                     "échantillons. Dans les tendances, les vidéos de 16 à 30 secondes ont la plus "
@@ -901,7 +915,7 @@ def feuille_facteurs(C, s, ws, d, res, calc, refs):
     ws.set_zoom(90)
     ws.set_landscape()
     ws.fit_to_pages(1, 0)
-    ws.freeze_panes(5, 2)
+    ws.set_h_pagebreaks([FA_GRAPH, FA_DUREE, FA_TCD - 2])
     return {"hashtag": (FA_TABLE + ORDRE_FACTEURS.index("hashtag_generique"), 3,
                         graph_rows["hashtag_generique"]["Tendances"][2]),
             "duree": (FA_TABLE + ORDRE_FACTEURS.index("duree_15"), 3,
@@ -940,7 +954,7 @@ def refs_categoriels(d, calc):
 # --------------------------------------------------------------------------- #
 GC_TRANCHES = 10        # première ligne du tableau par tranche
 GC_CORREL = 18          # première ligne du tableau des corrélations
-GC_TCD = 55             # ligne de la zone du TCD (filtre deux lignes au-dessus)
+GC_TCD = 60             # ligne de la zone du TCD (filtre deux lignes au-dessus)
 
 
 def p_partielle(r, n):
@@ -1109,14 +1123,15 @@ def feuille_gros_comptes(C, s, ws, d, res, calc):
                     "categories": ["Gros comptes", GC_TRANCHES, 1, GC_TRANCHES + 3, 1],
                     "values": ["Gros comptes", GC_TRANCHES, 5, GC_TRANCHES + 3, 5],
                     "fill": {"color": NUIT}, "gap": 70,
-                    "data_labels": {"value": True, "num_format": '0,," M"'}})
+                    "data_labels": {"value": True, "num_format": '0,," M"',
+                                    "position": "inside_base",
+                                    "font": {"color": "#FFFFFF", "bold": True}}})
     line = C.wb.add_chart({"type": "line"})
     line.add_series({"name": "Engagement médian (axe de droite)",
                      "categories": ["Gros comptes", GC_TRANCHES, 1, GC_TRANCHES + 3, 1],
                      "values": ["Gros comptes", GC_TRANCHES, 7, GC_TRANCHES + 3, 7],
                      "y2_axis": True, "line": {"color": ORANGE, "width": 2.5},
-                     "marker": {"type": "circle", "size": 7, "fill": {"color": ORANGE},
-                                "border": {"color": ORANGE}},
+                     "marker": {"type": "none"},
                      "data_labels": {"value": True, "num_format": "0.0%", "position": "above"}})
     col.combine(line)
     col.set_title({"name": "Vues et engagement médians par tranche d'abonnés",
@@ -1130,6 +1145,7 @@ def feuille_gros_comptes(C, s, ws, d, res, calc):
                     "Colonnes : vues médianes par tranche d'abonnés ; courbe : engagement médian. "
                     "Les vues varient peu d'une tranche à l'autre alors que l'engagement baisse "
                     "quand le compte grossit."})
+    ws.set_h_pagebreaks([rg])
     section(ws, s, GC_TCD - 4, "Tableau croisé dynamique : vidéos, top performers et engagement "
                                "moyen par tranche (filtre : Humour ; se met à jour à "
                                "l'ouverture)", 1, 9)
@@ -1292,7 +1308,7 @@ def feuille_categories(C, s, ws, d, res, calc):
     fin = CA_TREEMAP + len(res["treemap"])
     ws.set_row(fin, 30)
     ws.merge_range(fin, 1, fin, 3, "Ces 3 colonnes alimentent le TreeMap (Insertion > "
-                                   "Graphique hiérarchique > Carte proportionnelle).", s["note"])
+                                   "Graphique hiérarchique > Compartimentage).", s["note"])
 
     # E. Engagement par sujet et par échantillon (source de l'écart « sujet » des Facteurs).
     section(ws, s, CA_THEME_ECH - 2, "E. Taux d'engagement médian par sujet et par échantillon",
@@ -1346,6 +1362,7 @@ def feuille_categories(C, s, ws, d, res, calc):
     for i, txt in enumerate(vig):
         ws.set_row(rv + 1 + i, hauteur(("• " + txt, 200, 10)))
         ws.merge_range(rv + 1 + i, 1, rv + 1 + i, 10, "• " + txt, s["puce"])
+    ws.set_h_pagebreaks([CA_TREEMAP - 3, CA_TCD - 2])
     section(ws, s, CA_TCD - 2, "G. Tableau croisé dynamique : vues par sujet et par échantillon "
                                "(se met à jour à l'ouverture)", 1, 10)
     ws.set_zoom(90)

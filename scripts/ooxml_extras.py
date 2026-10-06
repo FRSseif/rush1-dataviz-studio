@@ -118,7 +118,7 @@ class Package:
 
     def sheet_part(self, sheet_name):
         wb = self.text("xl/workbook.xml")
-        m = re.search(r'<sheet name="%s" sheetId="\d+" r:id="(rId\d+)"/>' % re.escape(
+        m = re.search(r'<sheet [^>]*name="%s"[^>]*r:id="(rId\d+)"' % re.escape(
             esc(sheet_name)), wb)
         if not m:
             raise KeyError(sheet_name)
@@ -322,9 +322,9 @@ def pivot_table_xml(cache: Cache, spec: PivotSpec, cache_id):
         pf.append(f'<pivotField {" ".join(attrs)}>{items}</pivotField>' if items
                   else f'<pivotField {" ".join(attrs)}/>')
 
-    def items_xml(tag, idxs, extra_cols=0):
+    def items_xml(tag, idxs):
         out = []
-        for k, i in enumerate(idxs):
+        for i in idxs:
             out.append("<i><x/></i>" if i == 0 else f'<i><x v="{i}"/></i>')
         out.append('<i t="grand"><x/></i>')
         return f'<{tag} count="{len(out)}">{"".join(out)}</{tag}>'
