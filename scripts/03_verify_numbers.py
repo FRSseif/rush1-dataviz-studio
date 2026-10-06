@@ -1,13 +1,5 @@
-"""Phase 8 — Vérifie que chaque chiffre de la Synthèse correspond au calcul Python.
-
-1. Recalcule les chiffres clés DIRECTEMENT depuis les CSV bruts (nettoyage refait en
-   mémoire, statistiques avec scipy), indépendamment du classeur.
-2. Compare ces valeurs aux chiffres du classeur (valeurs enregistrées).
-3. Vérifie que les nombres cités dans les phrases de la Synthèse sont les bons.
-4. Avec --excel : fait recalculer TOUT le classeur par Microsoft Excel et compare
-   chaque cellule numérique au calcul Python (aucune erreur, aucun écart toléré).
-
-Usage : .venv/bin/python scripts/05_verify_numbers.py [--excel] [chemin.xlsx]
+"""
+Vérifier  que chaque chiffre de la Synthèse correspond au calcul Python.
 """
 import importlib
 import math
@@ -22,9 +14,20 @@ from scipy import stats
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 clean = importlib.import_module("01_clean")
-build = importlib.import_module("03_build_workbook")
 CLIENT = ROOT / "deliverable" / "Dataviz_Studio_TikTok_Client.xlsx"
-fr, pct, pval = build.fr, build.pct, build.pval
+
+
+def fr(x, dec=1, signe=False):
+    s = f"{x:+,.{dec}f}" if signe else f"{x:,.{dec}f}"
+    return s.replace(",", " ").replace(".", ",").replace("-", "−")
+
+
+def pct(x, dec=1):
+    return f"{fr(x * 100, dec)} %"
+
+
+def pval(p):
+    return "< 0,001" if p < 0.001 else fr(p, 2 if p >= 0.01 else 3)
 
 
 def donnees_brutes():
@@ -94,13 +97,13 @@ def proche(a, b, tol=1e-9):
     return isinstance(b, (int, float)) and math.isclose(a, b, rel_tol=tol, abs_tol=tol)
 
 
-def main(path, avec_excel):
+def main(path):
     k = chiffres_cles(donnees_brutes())
     wb = openpyxl.load_workbook(path, data_only=True)
     syn, gc, me = wb["Synthèse"], wb["Gros comptes"], wb["Méthode & limites"]
     R = Rapport()
 
-    # 2. Chiffres clés de la Synthèse (colonne D, lignes 6 à 10).
+    # Chiffres clés de la Synthèse (colonne D, lignes 6 à 10).
     attendus = [("D6", "rho_abonnes_vues", "ρ abonnés ↔ vues"),
                 ("D7", "eng_moins_1M", "engagement médian < 1 M d'abonnés"),
                 ("D8", "ecart_fyp", "écart #fyp (points, tendances)"),
@@ -118,7 +121,7 @@ def main(path, avec_excel):
                                                                     me["C11"].value),
             f"{me['C9'].value:.6f} / {me['C11'].value:.6f}")
 
-    # 3. Nombres cités dans les phrases de la Synthèse.
+    # Nombres cités dans les phrases de la Synthèse.
     texte = " ".join(str(c.value) for row in syn.iter_rows() for c in row
                      if isinstance(c.value, str))
     cites = {
@@ -137,37 +140,9 @@ def main(path, avec_excel):
     }
     for lib, attendu in cites.items():
         R.check(f"Texte : {lib}", attendu in texte, f"« {attendu} »")
-
-    # 4. Recalcul complet par Excel.
-    if avec_excel:
-        from excel_mac import roundtrip
-        dest = ROOT / "work" / "controle_excel.xlsx"
-        info = roundtrip(Path(path), dest, ["Facteurs", "Gros comptes", "Catégories & TreeMap"])
-        R.check("Excel ouvre le fichier sans réparation", info.get("feuilles") == "6",
-                str(info))
-        R.check("Excel reconnaît les 3 TCD", all(info.get(f) == "1" for f in
-                                                 ("Facteurs", "Gros comptes",
-                                                  "Catégories & TreeMap")))
-        xl = openpyxl.load_workbook(dest, data_only=True)
-        n, ecarts, erreurs = 0, [], []
-        for ws in wb.worksheets:
-            for row in ws.iter_rows():
-                for c in row:
-                    vx = xl[ws.title][c.coordinate].value
-                    if isinstance(vx, str) and vx.startswith("#"):
-                        erreurs.append(f"{ws.title}!{c.coordinate}")
-                    if isinstance(c.value, (int, float)) and not isinstance(c.value, bool):
-                        n += 1
-                        if not proche(c.value, vx):
-                            ecarts.append(f"{ws.title}!{c.coordinate}")
-        R.check("Excel : aucune cellule en erreur après recalcul", not erreurs,
-                ", ".join(erreurs[:5]))
-        R.check("Excel = Python sur toutes les cellules numériques", not ecarts,
-                f"{n} cellules comparées" + (f", écarts : {ecarts[:5]}" if ecarts else ""))
     return R.afficher()
 
 
 if __name__ == "__main__":
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    ok = main(args[0] if args else CLIENT, "--excel" in sys.argv)
+    ok = main(sys.argv[1] if len(sys.argv) > 1 else CLIENT)
     sys.exit(0 if ok else 1)

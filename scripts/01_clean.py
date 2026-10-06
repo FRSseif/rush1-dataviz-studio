@@ -1,12 +1,5 @@
-"""Phase 2 — Nettoyage et préparation (version agence, privée).
-
-Lit les CSV bruts de data_raw/ (jamais modifiés) et écrit dans work/ :
-  - videos_clean.csv  : une ligne par vidéo, colonnes uniformisées + variables dérivées
-Les extraits `trending_authors` (aucune métrique) et `tiktok_collected_videos`
-(compte institutionnel unique) sont écartés : voir la feuille « Méthode & limites ».
-Aucune bio, avatar, lien, identifiant interne ni nom affiché n'est conservé.
-
-Usage : .venv/bin/python scripts/01_clean.py
+"""
+ Nettoyage et préparation (version agence, privée).
 """
 import re
 from pathlib import Path

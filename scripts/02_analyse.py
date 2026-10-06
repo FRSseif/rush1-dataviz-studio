@@ -1,14 +1,6 @@
-"""Phases 3 à 6 — Statistiques, facteurs, objection « gros comptes », catégories,
+"""
+Statistiques, facteurs, objection « gros comptes », catégories,
 leaders et données du TreeMap.
-
-Lit work/videos_clean.csv (produit par 01_clean.py) et écrit work/resultats.json,
-source unique de tous les chiffres repris dans le classeur et vérifiés par
-05_verify_numbers.py.
-
-Définition du succès : taux d'engagement = (likes + commentaires + partages) / vues.
-Top performer = quart supérieur (≥ 75e centile) du taux d'engagement de son échantillon.
-
-Usage : .venv/bin/python scripts/02_analyse.py
 """
 import json
 import random
