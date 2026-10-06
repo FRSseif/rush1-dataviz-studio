@@ -1,0 +1,28 @@
+# Classeur de travail privé et intermédiaires (données personnelles)
+work/
+
+# Archive d'origine
+*.zip
+
+# Fichiers temporaires Excel / Office
+~$*
+*.tmp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Système
+.DS_Store
+Thumbs.db
+
+# Autres classeurs : seul le livrable client est autorisé dans deliverable/
+*.xlsx
+*.xlsm
+*.xls
+!deliverable/Dataviz_Studio_TikTok_Client.xlsx
+# Données brutes (données personnelles)
+data_raw/*.csv
