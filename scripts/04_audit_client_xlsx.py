@@ -141,7 +141,7 @@ def main(path):
             + (f", interdits : {sorted(champs - AUTORISEES)}" if champs - AUTORISEES else ""))
     n_tcd = len([n for n in noms if re.match(r"xl/pivotTables/pivotTable\d+\.xml", n)])
     a.check("Tableaux croisés dynamiques présents (≥ 2)", n_tcd >= 2, f"{n_tcd} TCD")
-    a.check("TreeMap natif présent (Carte proportionnelle)",
+    a.check("TreeMap natif présent (graphique « Compartimentage »)",
             any(n.startswith("xl/charts/chartEx") for n in noms)
             and "layoutId=\"treemap\"" in "".join(v for k, v in t.items() if "chartEx" in k),
             "à insérer dans Excel puis lancer 06_finaliser.py (voir README)")
